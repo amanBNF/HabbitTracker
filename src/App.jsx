@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import HabitCard from "./components/HabitCard";
+import { AnimatePresence, motion } from "framer-motion";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
 function App() {
-  // Load habits from localStorage on first render
   const [habits, setHabits] = useState(() => {
     const saved = localStorage.getItem("habits");
     return saved ? JSON.parse(saved) : [];
@@ -12,12 +12,6 @@ function App() {
 
   const [newHabitName, setNewHabitName] = useState("");
 
-  const deleteHabit = (id) => {
-    const filtered = habits.filter((habit) => habit.id !== id);
-    setHabits(filtered);
-  }
-
-  // Save habits to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("habits", JSON.stringify(habits));
   }, [habits]);
@@ -36,6 +30,11 @@ function App() {
     setNewHabitName("");
   };
 
+  const deleteHabit = (id) => {
+    const filtered = habits.filter((habit) => habit.id !== id);
+    setHabits(filtered);
+  };
+
   const toggleHabit = (id) => {
     const today = getToday();
 
@@ -52,32 +51,60 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 flex flex-col items-center">
-      <h1 className="text-3xl font-bold mb-6 text-purple-400">🌱 Habit Tracker</h1>
-
-      <div className="flex gap-2 mb-6">
-        <input
-          type="text"
-          placeholder="Enter new habit"
-          value={newHabitName}
-          onChange={(e) => setNewHabitName(e.target.value)}
-          className="px-4 py-2 rounded-lg text-black w-64"
-        />
-        <button
-          onClick={addHabit}
-          className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6">
+      <div className="w-full max-w-xl flex flex-col items-center">
+        <motion.h1
+          className="text-4xl font-bold mb-8 text-purple-400 text-center drop-shadow-lg"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Add
-        </button>
-      </div>
+          🌱 Habit Tracker
+        </motion.h1>
 
-      {habits.length === 0 ? (
-        <p className="text-gray-400">No habits yet. Start by adding one!</p>
-      ) : (
-        habits.map((habit) => (
-          <HabitCard key={habit.id} habit={habit} onToggle={toggleHabit} onDelete={deleteHabit} />
-        ))
-      )}
+        {/* Input and Add Button */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8 w-full">
+          <input
+            type="text"
+            placeholder="Enter new habit"
+            value={newHabitName}
+            onChange={(e) => setNewHabitName(e.target.value)}
+            className="flex-1 px-4 py-3 rounded-lg text-black shadow focus:outline-none"
+          />
+          <button
+            onClick={addHabit}
+            className="bg-purple-600 hover:bg-purple-700 transition px-6 py-3 rounded-lg text-white font-semibold shadow"
+          >
+            ➕ Add Habit
+          </button>
+        </div>
+
+        {/* Habit List */}
+        {habits.length === 0 ? (
+          <p className="text-gray-400 text-center">No habits yet. Start by adding one!</p>
+        ) : (
+          <div className="w-full flex flex-col items-center space-y-4">
+            <AnimatePresence>
+              {habits.map((habit) => (
+                <motion.div
+                  key={habit.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full"
+                >
+                  <HabitCard
+                    habit={habit}
+                    onToggle={toggleHabit}
+                    onDelete={deleteHabit}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
